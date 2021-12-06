@@ -5,32 +5,47 @@ Created on Mon Sep 27 10:57:23 2021
 @author: William Major
 
 Edited by Marika Takeuchi, 28th October 2021
+
+Edited by William Major, 6th December 2021
 """
 import holopy as hp
 import numpy as np
 import os
 import glob
 import shutil
+
 #%%  directory / other setting
-fin = os.getcwd() # get current directory / directory where original pgm files are saved
-#fin　= "\\dirname\\"
+wd = os.getcwd() # get current directory / directory where original pgm files are saved
+
+#wd　= "\\dirname\\"
+
 ## create directory to save reconstructed image
 if not os.path.exists('reconstructed'):
     os.mkdir('reconstructed')
-fout = fin + "\\reconstructed\\"
-filein= glob.glob(fin + '\\*.PGM') # hologram 
+fout = wd + "\\reconstructed\\"
+
+# create a list of .PGM files in current working directory
+filein= glob.glob(wd + '\\*.PGM') # hologram 
+
 ## image propogation: define distance between image plane and reconstruction plane
 zstack = np.linspace(0, 100000, 51)
 
+# create a list of numbers for sliced hologram filenames
+num_list = [str(i).zfill(2) for i in range(1,52)]
+
+
 #%% Reconstruction
 for jlop in range(len(filein)):
+    
     # output file name
     fout2 = filein[jlop].split("\\")
     fout2 = fout2[-1][0:-4]
     print(fout)
     fileout=[]
-    for ilop in range(51):
-        a=fout+fout2+"\\"+fout2+"_" +str(ilop)+".png"
+    
+    # loop to create 51 filenames
+    for ilop in num_list:
+        a=fout+fout2+"\\"+fout2+"_" + ilop +".png"
         fileout.append(a)
     os.mkdir(fout+fout2)
     # load in the and propogate hologram
@@ -39,7 +54,5 @@ for jlop in range(len(filein)):
     # save 51 images slices in hologram-specific directory
     hp.core.save_images(fileout, rec_vol, scaling=('auto'), depth=8)
     shutil.move(filein[jlop], fout+fout2+"\\")
-
-    
-    
-    
+    for f in fileout[:13]:
+        os.remove(f)
