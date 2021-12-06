@@ -3,69 +3,43 @@
 Created on Mon Sep 27 10:57:23 2021
 
 @author: William Major
-"""
 
+Edited by Marika Takeuchi, 28th October 2021
+"""
 import holopy as hp
 import numpy as np
 import os
-
-# import shutil to move file into variable folder
+import glob
 import shutil
-
-
-# use a reproducible path for the working directory from the location of the script
-from os import chdir, getcwd
-wd=getcwd()
-chdir(wd)
-
-
-# create a list of files in current working directory (NB: this does not specify .PGM files)
-import os.path
-os.chdir(wd + '\images\\HOLO-779\\selected')
-img_list = [".".join(f.split(".")[:-1]) for f in os.listdir() if os.path.isfile(f)]
-
-
-
-# image propogation: define distance between image plane and reconstruction plane
+#%%  directory / other setting
+fin = os.getcwd() # get current directory / directory where original pgm files are saved
+#fin　= "\\dirname\\"
+## create directory to save reconstructed image
+if not os.path.exists('reconstructed'):
+    os.mkdir('reconstructed')
+fout = fin + "\\reconstructed\\"
+filein= glob.glob(fin + '\\*.PGM') # hologram 
+## image propogation: define distance between image plane and reconstruction plane
 zstack = np.linspace(0, 100000, 51)
 
-
-# create a list of numbers for sliced hologram filenames
-num_list = [str(i).zfill(2) for i in range(1,52)]
-
-
-# loop to load and separate holograms into individual slices and image-specific directories
-for j in img_list:
-    
-    # set correct working directory
-    os.chdir(wd + '\images\\HOLO-779\\selected')
-    
-    # add file extension to filename variable
-    image_fn = j + ".PGM"
-    
+#%% Reconstruction
+for jlop in range(len(filein)):
+    # output file name
+    fout2 = filein[jlop].split("\\")
+    fout2 = fout2[-1][0:-4]
+    print(fout)
+    fileout=[]
+    for ilop in range(51):
+        a=fout+fout2+"\\"+fout2+"_" +str(ilop)+".png"
+        fileout.append(a)
+    os.mkdir(fout+fout2)
     # load in the and propogate hologram
-    raw_holo = hp.load_image(image_fn, spacing=4.4, medium_index = 1, illum_wavelen = 0.658)
+    raw_holo = hp.load_image(filein[jlop], spacing=4.4, medium_index = 1, illum_wavelen = 0.658)
     rec_vol = hp.propagate(raw_holo, zstack, cfsp = 3)
-    
-    # create a new directory for the hologram and image slices
-    outpath_whole = os.path.join(wd + '\images\\HOLO-779\\selected\\' + j)
-    if not os.path.exists(outpath_whole): os.mkdir(outpath_whole)
-    
-    # create empty list for filenames
-    file_list = []
-    
-    # loop to create 51 filenames
-    for g in num_list:
-        file_single = j + '_' + g + '.PNG'
-        file_list.append(file_single)
-        
-    # set the working directory to the hologram-specific directory
-    os.chdir(wd + '\images\\HOLO-779\\selected' + '\\' + j)
-    
     # save 51 images slices in hologram-specific directory
-    hp.core.save_images(file_list, rec_vol, scaling=('auto'), depth=8)
+    hp.core.save_images(fileout, rec_vol, scaling=('auto'), depth=8)
+    shutil.move(filein[jlop], fout+fout2+"\\")
+
     
-    # move the original hologram into its directory
-    shutil.move(wd + '\images\\HOLO-779\\selected' + '\\' + j + ".PGM", wd + '\images\\HOLO-779\\selected' + "\\" + j)
     
     
