@@ -29,7 +29,7 @@ class HoloMetadata:
     Attributes
     ----------
     metadata: metadata values
-    names: metadata names
+    var_name: variable names in metadata
 
     Parameters
     ----------
@@ -319,7 +319,7 @@ def export_metadata_batch(raw_folder_path, cruise, event, ext = '*.pgm'):
         file_list.append(image_fn.stem)
 
         # extract metadata
-        meta = HoloMetadata(image_fn)
+        meta = HoloMetadata(image_fn, cruise = cruise, event = event)
 
         # append to previous metadata
         overview.append(meta.metadata)
